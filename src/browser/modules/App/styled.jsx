@@ -27,6 +27,7 @@ export const StyledWrapper = styled.div`
   font-family: ${props => props.theme.primaryFontFamily};
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 `
 
 export const StyledApp = styled.div`
@@ -49,6 +50,7 @@ export const StyledMainWrapper = styled.div`
   flex: auto;
   background-color: #D2D5DA;
   overflow: auto;
-  padding: 0 24px;
+  padding: 0;
   z-index: 1;
+  height: auto;
 `

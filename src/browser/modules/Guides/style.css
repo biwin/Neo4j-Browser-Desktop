@@ -228,7 +228,7 @@
     }
   }
 
-  & a[help-topic] {
+  & a[help-topic], [play-topic], [server-topic], [exec-topic] {
     background-color: #f8f8f8;
     border-radius: 3px;
     border: 1px solid #dadada;
@@ -258,6 +258,9 @@
   & figcaption {
     font-style: italic;
     font-size: 13px;
+    text-align: center;
+  }
+  & footer {
     text-align: center;
   }
   .btn-cta {

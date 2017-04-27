@@ -26,6 +26,8 @@ export const StyledStream = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 17px;
+  overflow: auto;
+  padding: 0px 24px;
 `
 
 const rollDownAnimation = keyframes`
@@ -48,7 +50,7 @@ export const StyledFrame = styled.article`
   width: auto;
   background-color: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,.1);
-  animation: ${rollDownAnimation} + .2s linear;
+  animation: ${rollDownAnimation} .2s linear;
   border: ${props => props.theme.frameBorder};
   margin: ${props => props.fullscreen ? '0' : '10px 0px 10px 0px'};
   ${props => props.fullscreen ? 'position: fixed' : null};
@@ -61,28 +63,32 @@ export const StyledFrame = styled.article`
 
 export const StyledVisContainer = styled.div`
   width: 100%;
-  height: 100%;
+  height: ${props => (props.fullscreen ? '100vh' : (dim.frameBodyHeight - (dim.frameTitlebarHeight * 2)) + 'px')};
   display : ${props => props.style.display}
 `
 
 export const StyledFrameBody = styled.div`
-  height: ${props => props.collapsed ? 0 : (props.fullscreen ? '100%' : dim.frameBodyHeight + 'px')};
-  visibility: ${props => props.collapsed ? 'hidden' : 'visible'};
-  display: flex;
+  min-height: ${dim.frameBodyHeight / 2}px;
+  max-height: ${props => props.collapsed ? 0 : (props.fullscreen ? '100%' : (dim.frameBodyHeight - dim.frameStatusbarHeight) + 1 + 'px')};
+  display: ${props => props.collapsed ? 'none' : 'flex'};;
   flex-direction: row;
-  overflow: auto;
 `
 
 export const StyledFrameMainSection = styled.div`
   min-width: 0;
   flex: 1 1 auto;
+  height: 100%;
 `
 
 export const StyledFrameContents = styled.div`
   overflow: auto;
-  height: ${props => (props.fullscreen ? '100vh' : (dim.frameBodyHeight) + 'px')};
+  min-height: ${dim.frameBodyHeight / 2}px;
+  max-height: ${props => (props.fullscreen ? '100vh' : (dim.frameBodyHeight - (dim.frameStatusbarHeight * 2)) + 'px')};
+  ${props => props.fullscreen ? 'height: 100vh' : null}
+`
+
+export const PaddedDiv = styled.div`
   padding: 0 20px 20px 20px;
-  padding-top: 0;
   padding-bottom: ${props => (props.fullscreen ? (dim.frameTitlebarHeight + 20) + 'px' : '20px')};
 `
 
@@ -100,8 +106,8 @@ export const StyledFrameSidebar = styled.ul`
 
 export const StyledFrameStatusbar = styled.div`
   border-top: ${props => props.theme.inFrameBorder};
-  height: ${dim.frameStatusbarHeight}px;
-  margin-top: -${dim.frameStatusbarHeight}px;
+  height: ${dim.frameStatusbarHeight + 3}px;
+  ${props => props.fullscreen ? 'margin-top: -78px;' : ''}
 `
 
 export const StyledFrameTitleBar = styled.div`
@@ -123,14 +129,24 @@ export const FrameTitlebarButtonSection = styled.ul`
 `
 
 export const StyledFrameCommand = styled.label`
+  font-family: ${props => props.theme.editorFont};
+  font-size: 1.1em;
   margin: 3px 5px 3px 5px;
   flex: 1 1 auto;
   min-width: 0;
-  cursor: pointer;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   display: block;
+
+`
+export const DottedLineHover = styled.span`
+  cursor: pointer;
+  &:hover {
+    cursor: pointer;
+    border-bottom: 1px dotted #b6adad;
+    padding-bottom: 2px;
+  }
 `
 
 export const StyledHelpFrame = styled.div`
@@ -146,6 +162,19 @@ export const StyledHelpDescription = styled.div`
 `
 
 export const StyledDiv = styled.div`
+`
+
+export const StyledLink = styled.a`
+  cursor: pointer;
+  text-decoration: none;
+  &:hover {
+    color: #5dade2;
+    text-decoration: none;
+  }
+`
+
+export const StyledLinkContainer = styled.div`
+  margin: 16px 0;
 `
 
 export const StyledCypherMessage = styled.div`
@@ -178,21 +207,39 @@ export const StyledBr = styled.br`
 `
 
 export const StyledPreformattedArea = styled.pre`
-  font-family: Monaco, "Courier New", Terminal, monospace
-  font-size: 14px
-  padding: 12px 16px
-  margin: 0
-  background: none
-  border: none
-  background-color: #f5f5f5
+  font-family: Monaco, "Courier New", Terminal, monospace;
+  font-size: 14px;
+  white-space: pre-line;
+  padding: 12px 16px;
+  margin: 0;
+  background: none;
+  border: none;
+  background-color: #f5f5f5;
 `
 
-export const StyledNevadaCanvas = styled.div`
-  height: 100%;
-  width: 100%;
-  > .nevada-canvas {
-    position: relative;
-    height: 100%;
-    width: 100%;
-  }
+export const ErrorText = styled.span`
+  color: ${props => props.theme.error};
+  padding-left: 5px;
+  line-height: 35px;
+`
+export const StyledStatsBar = styled.div`
+  min-height: 39px;
+  line-height: 39px;
+  color: #788185;
+  font-size: 13px;
+  position: relative;
+  background-color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 24px;
+`
+
+export const StyledSchemaBody = styled(StyledPreformattedArea)`
+  padding-top: 6px
+`
+export const StyledBodyMessage = styled.div`
+  padding-top: 20px;
+  line-height: 1.428;
+  font-size: 15px;
+  color: #666;
 `

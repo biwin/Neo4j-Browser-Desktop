@@ -20,11 +20,13 @@
 
 import Rx from 'rxjs/Rx'
 import bolt from 'services/bolt/bolt'
+import { hydrate } from 'services/duckUtils'
 import { CONNECTION_SUCCESS, DISCONNECTION_SUCCESS, LOST_CONNECTION, UPDATE_CONNECTION_STATE, CONNECTED_STATE, connectionLossFilter } from 'shared/modules/connections/connectionsDuck'
 
 export const NAME = 'meta'
 export const UPDATE = 'meta/UPDATE'
 export const CLEAR = 'meta/CLEAR'
+export const FORCE_FETCH = 'meta/FORCE_FETCH'
 
 const initialState = {
   labels: [],
@@ -64,6 +66,8 @@ function updateMetaForContext (state, meta, context) {
  * Reducer
 */
 export default function labels (state = initialState, action) {
+  state = hydrate(initialState, state)
+
   switch (action.type) {
     case UPDATE:
       return updateMetaForContext(state, action.meta, action.context)
@@ -80,6 +84,11 @@ export function updateMeta (meta, context) {
     type: UPDATE,
     meta,
     context
+  }
+}
+export function fetchMetaData () {
+  return {
+    type: FORCE_FETCH
   }
 }
 
@@ -101,6 +110,7 @@ export const dbMetaEpic = (some$, store) =>
     .merge(some$.ofType(CONNECTION_SUCCESS))
     .mergeMap(() => {
       return Rx.Observable.timer(0, 20000)
+      .merge(some$.ofType(FORCE_FETCH))
       .mergeMap(() =>
         Rx.Observable
         .fromPromise(bolt.routedReadTransaction(metaQuery))

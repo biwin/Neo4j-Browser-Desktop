@@ -22,8 +22,6 @@ import { Component } from 'preact'
 import styled from 'styled-components'
 import { dim } from 'browser-styles/constants'
 
-import { BinIcon, ExpandMenuIcon, CollapseMenuIcon } from 'browser-components/icons/Icons'
-
 import styles from './style.css'
 
 export class ToolTip extends Component {
@@ -89,30 +87,6 @@ export const EditorButton = styled.span`
   }
 `
 
-const StyledFavoriteText = styled.span`
-  font-family: ${props => props.theme.primaryFontFamily};
-  width: 182px;
-  color: #bcc0c9;
-  font-size: 13px;
-  display: inline-block;
-  max-height: 54px;
-  overflow: hidden;
-`
-
-const StyledList = styled.ul`
-  list-style-type: none;
-  margin: 16px 0;
-`
-const StyledListItem = styled.li`
-  list-style-type: none;
-  margin: 8px ${props => props.isChild ? '16px' : '8px'};
-  cursor: pointer;  
-`
-const StyledListHeaderItem = styled.li`
-  list-style-type: none;
-  cursor: pointer;  
-`
-
 export const StyledNavigationButton = styled.button`
   background: transparent;
   border: 0;
@@ -131,33 +105,6 @@ export const NavigationButtonContainer = styled.li`
   &:focus {
     outline: none;
   }
-`
-
-export const FavoriteList = (props) => {
-  let icon = props.active ? <CollapseMenuIcon /> : <ExpandMenuIcon />
-  return <StyledList>
-    <StyledListHeaderItem onClick={props.onClick}>
-      <FoldersButton>{icon}</FoldersButton>&nbsp;&nbsp;
-      {props.folder.name}
-    </StyledListHeaderItem>
-    {props.active ? props.children : null}
-  </StyledList>
-}
-
-export const FavoriteItem = (props) => {
-  const {primaryText, removeClick, ...rest} = props
-  const rightIcon = (removeClick && !props.isStatic) ? (<BinIcon className={styles.remove + ' remove'} />) : null
-  return (
-    <StyledListItem isChild={props.isChild}>
-      <StyledFavoriteText {...rest}>{primaryText}</StyledFavoriteText>
-      <span onClick={removeClick}>{rightIcon}</span>
-    </StyledListItem>
-  )
-}
-
-const FoldersButton = styled.button`
-  background: transparent;
-  border: none
 `
 
 const StyledFormButton = styled.button`
@@ -183,7 +130,7 @@ const StyledFormButton = styled.button`
 
 const StyledSecondaryFormButton = styled(StyledFormButton)`
   color: ${props => props.theme.secondaryButtonText};
-  border: ${props => props.theme.secondaryButtonBorder}; 
+  border: ${props => props.theme.secondaryButtonBorder};
   background-color: ${props => props.theme.secondaryButtonBackground};
   &:hover {
     color: ${props => props.theme.secondaryButtonTextHover};
@@ -207,7 +154,12 @@ export const FormButton = (props) => {
   return (<ButtonType {...props} type='button'>{children}</ButtonType>)
 }
 
-export const CypherFrameButton = styled.li`
+export const CypherFrameButton = (props) => {
+  const {selected, ...rest} = props
+  return (selected) ? <StyledSelectedCypherFrameButton {...rest} /> : <StyledCypherFrameButton {...rest} />
+}
+
+const StyledCypherFrameButton = styled.li`
   color: ${props => props.theme.secondaryButtonText};
   background-color: transparent;
   border-bottom: ${props => props.theme.inFrameBorder};
@@ -225,8 +177,15 @@ export const CypherFrameButton = styled.li`
     text-decoration: none;
   }
 `
-
-export const FrameButton = styled.li`
+const StyledSelectedCypherFrameButton = styled(StyledCypherFrameButton)`
+  background-color: ${props => props.theme.secondaryButtonBackgroundHover};
+  color: ${props => props.theme.editorBarBackground};
+`
+export const FrameButton = (props) => {
+  const {pressed, children, ...rest} = props
+  return (pressed) ? <StyledFrameButtonPressed {...rest}>{children}</StyledFrameButtonPressed> : <StyledFrameButton {...rest}>{children}</StyledFrameButton>
+}
+const StyledFrameButton = styled.li`
   color: ${props => props.theme.secondaryButtonText};
   background-color: transparent;
   border-left: ${props => props.theme.inFrameBorder};
@@ -240,9 +199,15 @@ export const FrameButton = styled.li`
   display: inline-block;
   &:hover {
     background-color: ${props => props.theme.secondaryButtonBackgroundHover};
-    color: ${props => props.theme.editorBarBackground};
+    color: ${props => props.theme.secondaryBackground};
+    fill: ${props => props.theme.secondaryBackground};
     text-decoration: none;
   }
+`
+const StyledFrameButtonPressed = styled(StyledFrameButton)`
+  background-color: ${props => props.theme.secondaryButtonBackgroundHover};
+  color: ${props => props.theme.secondaryBackground};
+  fill: ${props => props.theme.secondaryBackground};
 `
 
 export const FrameButtonAChild = styled.a`
@@ -281,12 +246,16 @@ const BaseCarouselButton = styled.button`
   width: 40px;
   min-width: 40px;
   -webkit-font-smoothing: antialiased;
+  user-select: none;
   &:hover {
     color: #fff;
     text-decoration: none;
     filter: alpha(opacity=90);
     outline: 0;
     opacity: .9;
+  }
+  &:focus {
+    outline: none;
   }
 `
 const CarouselButtonOverlay = styled.span`

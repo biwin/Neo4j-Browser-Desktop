@@ -20,19 +20,23 @@
 
 import Rx from 'rxjs/Rx'
 import remote from 'services/remote'
+import { hydrate } from 'services/duckUtils'
 import { updateConnection } from 'shared/modules/connections/connectionsDuck'
-import { APP_START } from 'shared/modules/app/appDuck'
+import { APP_START, USER_CLEAR } from 'shared/modules/app/appDuck'
 import { getDiscoveryEndpoint } from 'services/bolt/boltHelpers'
 
 export const NAME = 'discover-bolt-host'
 export const CONNECTION_ID = '$$discovery'
 
+const initialState = {}
 // Actions
 const SET = `${NAME}/SET`
 export const DONE = `${NAME}/DONE`
 
 // Reducer
-export default function reducer (state = {}, action = {}) {
+export default function reducer (state = initialState, action = {}) {
+  state = hydrate(initialState, state)
+
   switch (action.type) {
     case SET:
       return Object.assign({}, state, {boltHost: action.boltHost})
@@ -58,7 +62,7 @@ export const getBoltHost = (state) => {
 }
 
 export const discoveryOnStartupEpic = (some$, store) => {
-  return some$.ofType(APP_START)
+  return some$.ofType(APP_START).merge(some$.ofType(USER_CLEAR))
     .mergeMap((action) => {
       return Rx.Observable.fromPromise(
         remote.getJSON(getDiscoveryEndpoint()).then((result) => { // Try to get info from server

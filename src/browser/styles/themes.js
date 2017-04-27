@@ -37,13 +37,15 @@ export const base = {
   primaryFontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
   drawerHeaderFontFamily: "'Open Sans', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif",
   streamlineFontFamily: 'streamline',
+  editorFont: '"Inconsolata", "Monaco", "Lucida Console", Courier, monospace;',
   // Headers
   primaryHeaderText: '#fff',
 
   // User feedback colors
   success: '#70E9B1',
   error: '#E74C3C',
-  warning: '#ebf094',
+  warning: '#FD952C',
+  auth: '#428BCA',
 
   // Buttons
   primaryButtonText: '',

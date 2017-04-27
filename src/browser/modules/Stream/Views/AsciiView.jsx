@@ -19,13 +19,15 @@
  */
 
 import asciitable from 'ascii-data-table'
+import { flattenProperties } from 'services/bolt/boltMappings'
 
-const AsciiView = ({rows, style}) => {
-  if (!rows) {
-    return (<div style={style}><em>No results found</em></div>)
-  }
+import { PaddedDiv, StyledBodyMessage } from '../styled'
 
-  return <pre style={style}>{asciitable.table(rows, 70)}</pre>
+const AsciiView = ({rows, style, message}) => {
+  const contents = rows
+    ? <pre>{asciitable.table(flattenProperties(rows), 70)}</pre>
+    : <StyledBodyMessage>{message}</StyledBodyMessage>
+  return <PaddedDiv style={style}>{contents}</PaddedDiv>
 }
 
 export default AsciiView

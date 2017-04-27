@@ -21,6 +21,7 @@
 export const VISUALIZATION = 'VISUALIZATION'
 export const PLAN = 'PLAN'
 export const WARNINGS = 'WARNINGS'
+export const ERRORS = 'ERRORS'
 export const TABLE = 'TABLE'
 export const CODE = 'CODE'
 export const ERROR = 'ERROR'

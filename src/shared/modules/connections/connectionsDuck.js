@@ -21,6 +21,7 @@
 import Rx from 'rxjs/Rx'
 import bolt from 'services/bolt/bolt'
 import { getEncryptionMode } from 'services/bolt/boltHelpers'
+import { hydrate } from 'services/duckUtils'
 import * as discovery from 'shared/modules/discovery/discoveryDuck'
 import { executeSystemCommand } from 'shared/modules/commands/commandsDuck'
 import { getInitCmd, getSettings, getUseBoltRouting, UPDATE as SETTINGS_UPDATE } from 'shared/modules/settings/settingsDuck'
@@ -56,7 +57,12 @@ const initialState = {
  * Selectors
 */
 export function getConnection (state, id) {
-  return getConnections(state).filter((connection) => connection.id === id)[0]
+  let connections = getConnections(state).filter((connection) => connection && connection.id === id)
+  if (connections && connections.length > 0) {
+    return connections[0]
+  } else {
+    return null
+  }
 }
 
 export function getConnections (state) {
@@ -129,6 +135,8 @@ const mergeConnectionHelper = (state, connection) => {
 }
 
 export default function (state = initialState, action) {
+  state = hydrate(initialState, state)
+
   switch (action.type) {
     case ADD:
       return addConnectionHelper(state, action.connection)
@@ -194,7 +202,13 @@ const onLostConnection = (dispatch) => (e) => {
   dispatch({ type: LOST_CONNECTION, error: e })
 }
 
-export const connectionLossFilter = (action) => action.error.code !== 'Neo.ClientError.Security.Unauthorized'
+export const connectionLossFilter = (action) => {
+  const notLostCodes = [
+    'Neo.ClientError.Security.Unauthorized',
+    'Neo.ClientError.Security.AuthenticationRateLimit'
+  ]
+  return notLostCodes.indexOf(action.error.code) < 0
+}
 
 // Epics
 export const connectEpic = (action$, store) => {
@@ -260,7 +274,7 @@ export const detectActiveConnectionChangeEpic = (action$, store) => {
     })
 }
 export const disconnectEpic = (action$, store) => {
-  return action$.ofType(DISCONNECT)
+  return action$.ofType(DISCONNECT).merge(action$.ofType(USER_CLEAR))
     .do(() => bolt.closeConnection())
     .do((action) => store.dispatch(updateConnection({ id: action.id, password: '' })))
     .mapTo(setActiveConnection(null))

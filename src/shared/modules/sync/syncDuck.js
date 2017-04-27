@@ -20,14 +20,21 @@
 
 import { syncResourceFor } from 'services/browserSyncService'
 import { setItem } from 'services/localstorage'
-import { USER_CLEAR } from 'shared/modules/app/appDuck'
-import { composeDocumentsToSync, favoritesToLoad, loadFavorites, syncFavorites, ADD_FAVORITE, REMOVE_FAVORITE, SYNC_FAVORITES } from 'shared/modules/favorites/favoritesDuck'
+import { composeDocumentsToSync, favoritesToLoad, loadFavorites, syncFavorites, ADD_FAVORITE, REMOVE_FAVORITE, SYNC_FAVORITES, UPDATE_FAVORITES } from 'shared/modules/favorites/favoritesDuck'
+import { REMOVE_FOLDER, ADD_FOLDER, UPDATE_FOLDERS, SYNC_FOLDERS, composeFoldersToSync, foldersToLoad, loadFolders, syncFolders } from 'shared/modules/favorites/foldersDuck'
+import { CLEAR_LOCALSTORAGE } from 'shared/modules/localstorage/localstorageDuck'
+import { hydrate } from 'services/duckUtils'
 
 export const NAME = 'sync'
+export const NAME_CONSENT = 'syncConsent'
 export const SET_SYNC = 'sync/SET_SYNC'
 export const SYNC_ITEMS = 'sync/SYNC_ITEMS'
 export const CLEAR_SYNC = 'sync/CLEAR_SYNC'
 export const CLEAR_SYNC_AND_LOCAL = 'sync/CLEAR_SYNC_AND_LOCAL'
+export const CONSENT_SYNC = 'sync/CONSENT_SYNC'
+
+const initialState = null
+const initialConsentState = false
 
 /**
  * Selectors
@@ -39,13 +46,29 @@ export function getSync (state) {
 /**
  * Reducer
 */
-export default function reducer (state = null, action) {
+
+export function syncReducer (state = initialState, action) {
+  state = hydrate(initialState, state)
+
   switch (action.type) {
     case SET_SYNC:
       return Object.assign({}, state, action.obj)
     case CLEAR_SYNC:
     case CLEAR_SYNC_AND_LOCAL:
       return null
+    default:
+      return state
+  }
+}
+
+export function syncConsentReducer (state = initialConsentState, action) {
+  state = hydrate(initialConsentState, state)
+
+  switch (action.type) {
+    case CONSENT_SYNC:
+      return action.consent
+    case CLEAR_SYNC_AND_LOCAL:
+      return false
     default:
       return state
   }
@@ -79,6 +102,13 @@ export function clearSyncAndLocal () {
   }
 }
 
+export function consentSync (consent) {
+  return {
+    type: CONSENT_SYNC,
+    consent
+  }
+}
+
 export const syncItemsEpic = (action$, store) =>
   action$.ofType(SYNC_ITEMS)
     .do((action) => {
@@ -92,11 +122,12 @@ export const clearSyncEpic = (action$, store) =>
     .do((action) => {
       setItem('documents', null)
       setItem('folders', null)
+      setItem('syncConsent', false)
     })
-    .mapTo({ type: USER_CLEAR })
+    .mapTo({ type: CLEAR_LOCALSTORAGE })
 
 export const syncFavoritesEpic = (action$, store) =>
-  action$.filter((action) => [ADD_FAVORITE, REMOVE_FAVORITE, SYNC_FAVORITES].includes(action.type))
+  action$.filter((action) => [ADD_FAVORITE, REMOVE_FAVORITE, SYNC_FAVORITES, UPDATE_FAVORITES].includes(action.type))
     .map((action) => {
       const syncValue = getSync(store.getState())
 
@@ -121,3 +152,31 @@ export const loadFavoritesFromSyncEpic = (action$, store) =>
       }
     })
     .mapTo({ type: 'NOOP' })
+
+export const syncFoldersEpic = (action$, store) =>
+  action$.filter((action) => [ADD_FOLDER, REMOVE_FOLDER, SYNC_FOLDERS, UPDATE_FOLDERS].includes(action.type))
+    .map((action) => {
+      const syncValue = getSync(store.getState())
+
+      if (syncValue && syncValue.syncObj) {
+        const folders = composeFoldersToSync(store, syncValue)
+        return syncItems('folders', folders)
+      }
+      return { type: 'NOOP' }
+    })
+
+export const loadFoldersFromSyncEpic = (action$, store) =>
+  action$.ofType(SET_SYNC)
+    .do((action) => {
+      const folderStatus = foldersToLoad(action, store)
+
+      if (folderStatus.loadFolders) {
+        store.dispatch(loadFolders(folderStatus.folders))
+      }
+
+      if (folderStatus.syncFolders) {
+        store.dispatch(syncFolders(folderStatus.folders))
+      }
+    })
+    .mapTo({type: 'NOOP'})
+

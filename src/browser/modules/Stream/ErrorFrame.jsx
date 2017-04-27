@@ -20,17 +20,19 @@
 
 import FrameTemplate from './FrameTemplate'
 import * as e from 'services/exceptionMessages'
+import { getErrorMessage } from 'services/exceptions'
+import { PaddedDiv } from './styled'
 
 const ErrorFrame = ({frame}) => {
   const error = frame.error || false
   let errorContents = error.message || 'No error message found'
   if (error.type && typeof e[error.type] !== 'undefined') {
-    errorContents = e[error.type]
+    errorContents = getErrorMessage(error)
   }
   return (
     <FrameTemplate
       header={frame}
-      contents={<pre>{errorContents}</pre>}
+      contents={<PaddedDiv><pre>{errorContents}</pre></PaddedDiv>}
     />
   )
 }

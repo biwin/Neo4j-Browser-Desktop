@@ -19,6 +19,7 @@
  */
 
 import { USER_CLEAR } from 'shared/modules/app/appDuck'
+import { hydrate } from 'services/duckUtils'
 
 export const NAME = 'settings'
 export const UPDATE = 'settings/UPDATE'
@@ -32,6 +33,7 @@ export const getBrowserSyncConfig = (state) => {
     ? {...browserSyncConfig, authWindowUrl: getSettings(state).browserSyncDebugServer}
     : browserSyncConfig
 }
+export const getMaxNeighbours = (state) => state[NAME].maxNeighbours || initialState.maxNeighbours
 
 const browserSyncConfig = {
   authWindowUrl: 'https://auth.neo4j.com/indexNewBrowser.html',
@@ -42,6 +44,7 @@ const browserSyncConfig = {
   }
 }
 export const getUseNewVisualization = (state) => state[NAME].useNewVis
+export const getCmdChar = (state) => state[NAME].cmdchar || initialState.cmdchar
 
 const initialState = {
   cmdchar: ':',
@@ -56,6 +59,8 @@ const initialState = {
 }
 
 export default function settings (state = initialState, action) {
+  state = hydrate(initialState, state)
+
   switch (action.type) {
     case UPDATE:
       return Object.assign({}, state, action.state)

@@ -23,8 +23,9 @@ import { connect } from 'preact-redux'
 import { withBus } from 'preact-suber'
 import { ThemeProvider } from 'styled-components'
 import * as themes from 'browser/styles/themes'
-import { getTheme } from 'shared/modules/settings/settingsDuck'
-import { FOCUS } from 'shared/modules/editor/editorDuck'
+import { getTheme, getCmdChar } from 'shared/modules/settings/settingsDuck'
+import { FOCUS, EXPAND } from 'shared/modules/editor/editorDuck'
+import { wasUnknownCommand, getErrorMessage } from 'shared/modules/commands/commandsDuck'
 import { StyledWrapper, StyledApp, StyledBody, StyledMainWrapper } from './styled'
 
 import Main from '../Main/Main'
@@ -35,26 +36,38 @@ import { getActiveConnection, getConnectionState } from 'shared/modules/connecti
 class App extends Component {
   componentDidMount () {
     document.addEventListener('keyup', this.focusEditorOnSlash.bind(this))
+    document.addEventListener('keyup', this.expandEditorOnEsc.bind(this))
   }
   componentWillUnmount () {
     document.removeEventListener('keyup', this.focusEditorOnSlash.bind(this))
+    document.removeEventListener('keyup', this.expandEditorOnEsc.bind(this))
   }
   focusEditorOnSlash (e) {
     if (['INPUT', 'TEXTAREA'].indexOf(e.target.tagName) > -1) return
     if (e.key !== '/') return
     this.props.bus && this.props.bus.send(FOCUS)
   }
+  expandEditorOnEsc (e) {
+    if (e.keyCode !== 27) return
+    this.props.bus && this.props.bus.send(EXPAND)
+  }
   render () {
-    const {drawer, handleNavClick, activeConnection, connectionState, theme} = this.props
+    const {drawer, cmdchar, handleNavClick, activeConnection, connectionState, theme, showUnknownCommandBanner, errorMessage} = this.props
     const themeData = themes[theme] || themes['normal']
     return (
       <ThemeProvider theme={themeData}>
         <StyledWrapper>
           <StyledApp>
             <StyledBody>
-              <Sidebar activeConnection={activeConnection} openDrawer={drawer} onNavClick={handleNavClick} connectionState={connectionState} />
+              <Sidebar openDrawer={drawer} onNavClick={handleNavClick} />
               <StyledMainWrapper>
-                <Main />
+                <Main
+                  cmdchar={cmdchar}
+                  activeConnection={activeConnection}
+                  connectionState={connectionState}
+                  showUnknownCommandBanner={showUnknownCommandBanner}
+                  errorMessage={errorMessage}
+                />
               </StyledMainWrapper>
             </StyledBody>
           </StyledApp>
@@ -69,7 +82,10 @@ const mapStateToProps = (state) => {
     drawer: state.drawer,
     activeConnection: getActiveConnection(state),
     theme: getTheme(state),
-    connectionState: getConnectionState(state)
+    connectionState: getConnectionState(state),
+    cmdchar: getCmdChar(state),
+    showUnknownCommandBanner: wasUnknownCommand(state),
+    errorMessage: getErrorMessage(state)
   }
 }
 
